@@ -4,6 +4,7 @@ local config = script.Parent.Configuration
 local sessiondata = script.Parent.sessionData
 --script.AccelSystemsFKTC.Parent = game.ReplicatedStorage
 
+--[[
 game.Players.PlayerAdded:Connect(function(player)
 	player.Chatted:Connect(function(msg)
 		if msg == "/showpanel" then
@@ -12,17 +13,29 @@ game.Players.PlayerAdded:Connect(function(player)
 		end
 	end)
 end)
+--]]
 
 game.ReplicatedStorage.AccelSystemsFKTC.session.folder.Value = config.folder.Value
+script.Parent.GUI.loader.Parent = game.StarterGui
+config.whitelist:Clone().Parent = game.ReplicatedStorage.AccelSystemsFKTC
 
 warn("Loading AccelSystems Flux Kit Decompiler")
 task.wait(5)
-warn("Loaded succesfully")
+print("AccelSystems")
+print("Flux Kit Time Code System")
+print("Loading...")
+task.wait(0.5)
+print("Loaded.")
 
 local config = script.Parent.Configuration
+local logTable = {}
 local whitelist = require(config.whitelist)
 local compressModule = require(game.ReplicatedStorage.AccelSystemsFKTC.lib.ColourModule)
 local lastEventTime = os.clock()
+local sound = Instance.new("Sound", game.SoundService)
+sound.Name = "AccelSystemsFKTC"
+
+local selectedSong = nil
 
 local showfile = {}
 
@@ -44,7 +57,7 @@ local function logEvent(eventType, arg1, arg2, arg3, arg4, arg5)
 		
 		if arg3 == nil then arg3 = "Returned nil" end;if arg4 == nil then arg4 = "Returned nil" end;if arg5 == nil then arg5 = "Returned nil" end
 		
-		if config.debug.Value == true then
+		if config.compilerDebug.Value == true then
 			warn("--- "..eventType.." ---")
 			print(arg1)
 			print(arg2)
@@ -59,25 +72,93 @@ end
 
 -- events
 
-game.ReplicatedStorage.AccelSystemsFKTC.getData.OnServerInvoke = function(player)
+game.Workspace.AccelSystemsFKTC.remotes.getData.OnServerInvoke = function(player)
 	return showfile
 end
 
-game.ReplicatedStorage.AccelSystemsFKTC.getDataClient.OnServerEvent:Connect(function(player, arg)
+game.Workspace.AccelSystemsFKTC.remotes.clientData.OnServerInvoke = function(player, arg)
+	if arg == "showfile" then
+		return showfile
+	elseif arg == "outputlog" then
+		if game.ReplicatedStorage.AccelSystemsFKTC.debug.Value == true then print(logTable) end
+		return logTable
+	end
+end
+
+game.Workspace.AccelSystemsFKTC.remotes.getDataClient.OnServerEvent:Connect(function(player, arg)
 	if whitelist(player) == true then
 		if arg == "clear" then
 			table.clear(showfile)
+		elseif arg == "startRecording" then
+			script.Parent.sessionData.recording.Value = true
+		elseif arg == "stopRecording" then
+			script.Parent.sessionData.recording.Value = false
 		end
 	end
 end)
 
-game.ReplicatedStorage.AccelSystemsFKTC.getDataServer.Event:Connect(function(arg)
+game.Workspace.AccelSystemsFKTC.remotes.getDataServer.Event:Connect(function(arg)
 	if arg == "get" then
-		game.ReplicatedStorage.AccelSystemsFKTC.tableReturn:Fire(showfile)
+		game.Workspace.AccelSystemsFKTC.remotes.tableReturn:Fire(showfile)
 	elseif arg == "clear" then
 		table.clear(showfile)
 	elseif arg == "reset" then
 		lastEventTime = os.clock()
+	end
+end)
+
+game.Workspace.AccelSystemsFKTC.remotes.createShow.OnServerEvent:Connect(function(player,name, data)
+	if whitelist(player) == true then
+		local stringValue = Instance.new("StringValue", game.ReplicatedStorage.AccelSystemsFKTC.shows)
+		stringValue.Value = data
+		stringValue.Name = name
+	end
+end)
+
+game.Workspace.AccelSystemsFKTC.remotes.logAction.OnServerEvent:Connect(function(player,action)
+	local msg 
+	
+	if action == "play" then
+		msg = player.Name.." has started the playback.."
+	elseif action == "startRecording" then
+		msg = player.Name.." has started recording showfile."
+	elseif action == "stopRecording" then
+		msg = player.Name.." has stopped recording showfile."
+	elseif action == "clear" then
+		msg = player.Name.." has cleared the showfile."
+	elseif action == "compress" then
+		msg = player.Name.." has compressed the showfile."
+	end
+ 	
+	table.insert(logTable, msg)
+end)
+
+game.Workspace.AccelSystemsFKTC.remotes.selectSong.OnServerEvent:Connect(function(player, NAME, ID)
+	selectedSong = {NAME, ID}
+end)
+
+game.Workspace.AccelSystemsFKTC.remotes.soundRemote.OnServerEvent:Connect(function(player, NAME, ID)
+	sound.SoundId = "rbxassetid://"..ID
+	sound:Play()
+end)
+
+game.ServerScriptService.AccelSystemsFKTC.sessionData.recording.Changed:Connect(function(VALUE)
+	if VALUE == true and selectedSong[2] ~= nil then
+		sound.SoundId = "rbxassetid://"..selectedSong[2]
+		sound:Play()
+		
+		table.insert(showfile, {
+			eventType = "sound",
+			Function = selectedSong[1],
+			Arguments = selectedSong[2],
+			ExternalArgument = nil,
+			FunctionsExpand = nil,
+			ColorCompressed = nil,
+			Delay = nil
+		})
+		
+	elseif VALUE == false then
+		sound:Stop()
 	end
 end)
 
@@ -107,9 +188,3 @@ config.folder.Value.call.functions.OnServerEvent:Connect(function(player, arg1, 
 		logEvent("functions", arg1, arg2, arg3, arg4, compressedString) -- colors dont work
 	end
 end)
-
-if config.TextChatServiceCommand.Value == true then
-	local cmd = Instance.new("TextChatCommand", game.TextChatService)
-	cmd.Name = "Showpanel"
-	cmd.PrimaryAlias = "showpanel"
-end
