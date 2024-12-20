@@ -5,7 +5,7 @@ local localPlayer = game.Players.LocalPlayer
 local show = 1
 local logTable = {}
 
-print("booted client panel")
+print("" .. "\n" .. "--------- AccelSystems FKTC ---------" .. "\n" .. "" .. "\n" .. "Running client/root" .. "\n" .. "Extracting GUI" .. "\n" .. "Processing whitelist" .. "\n" .. "UserID: "..game.Players.LocalPlayer.UserId .. "\n" .. "User: "..game.Players.LocalPlayer.Name .. "\n" .. "" .. "\n" ..  "--------- AccelSystems FKTC ---------")
 
 local showRunning = false
 
@@ -28,6 +28,7 @@ local outputGUI = gui.core.output
 
 --functions
 local function processShowfile(showfile)
+	print("running stack: processShowfile")
 	for _, event in pairs(showfile) do
 		local eventType = event.eventType
 		local arg1 = event.Function
@@ -40,24 +41,23 @@ local function processShowfile(showfile)
 		task.wait(event.Delay)
 		
 		if remotes[eventType] then
-			if eventType == "functions" or eventType == "pyrotechnics" then
+			if eventType == "functions" or eventType == "pyrotechnics" or "sound" then
 				if arg4 == nil then
 					remotes[eventType]:FireServer(arg1, arg2, arg3)
+				--elseif arg3 == "sound" then
+				--	game.Workspace.AccelSystemsFKTC.remotes.soundRemote:FireServer(arg1, arg2)
 				else
 					local compressedColor = compressModule.decompressColor3String(arg5)
-
 					remotes[eventType]:FireServer(arg1, arg2, arg3, arg4, compressedColor)
 				end
-			elseif eventType == "sound" then
-				game.Workspace.AccelSystemsFKTC.remotes.soundRemote:FireServer(arg1, arg2)
 			else
 				remotes[eventType]:FireServer(arg1, arg2)
 			end
 		else
-			warn("No remote found for event type: " .. eventType)
+			warn("No remote found for event type: "..eventType)
 		end
 	end
-	showRunning = true
+	--showRunning = true
 end
 
 local function tableToString(tbl)
@@ -78,6 +78,7 @@ end
 
 local function selectSong(name, id)
 	game.Workspace.AccelSystemsFKTC.remotes.selectSong:FireServer(name, id)
+	gui.core.songSelected.Text = "Song Selected: "..name
 end
 
 local function userWarning(header,text)
@@ -123,6 +124,25 @@ local function changeFrame(frame)
 			clone.showName.Text = v.Name
 			clone.Parent = showGUI.frame
 		end
+		
+		for _,v in pairs(showGUI.frame:GetChildren()) do
+			if v:IsA("Frame") then
+				if v.Name ~= "spacer" then
+					v.playShow.MouseButton1Up:Connect(function()
+						for _,value in pairs(shows:GetChildren()) do
+							if v.Name == value.Name then
+								userWarning("Playback System", "Running showfile / If not started run the show again.")
+								logAction("play")
+
+								local showfileProcessed = stringToTable(value.Value)
+								userWarning("Playback System", "Decompressing table, this might take a while.")
+								processShowfile(showfileProcessed)
+							end
+						end
+					end)
+				end
+			end
+		end
 	end
 	
 	gui.core.selected.Text = "Selected: "..frame 
@@ -156,21 +176,18 @@ for _,v in pairs(showGUI.frame:GetChildren()) do
 			v.playShow.MouseButton1Up:Connect(function()
 				for _,value in pairs(shows:GetChildren()) do
 					if v.Name == value.Name then
-						if showRunning == false then
-							userWarning("Playback System", "Started showfile playback.")
-							logAction("play")
-							local showfileProcessed = stringToTable(value.Value)
-							processShowfile(showfileProcessed)
-							showRunning = false
-						else
-							userWarning("Playback System", "Showfile already running!")
-						end
+						userWarning("Playback System", "Started showfile playback.")
+						logAction("play")
+						
+						local showfileProcessed = stringToTable(value.Value)
+						processShowfile(showfileProcessed)
 					end
 				end
 			end)
 		end
 	end
 end
+
 --songs
 for _,v in pairs(songGUI.frame:GetChildren()) do
 	if v:IsA("Frame") then
