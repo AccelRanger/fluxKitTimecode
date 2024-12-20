@@ -2,30 +2,10 @@
 
 local config = script.Parent.Configuration
 local sessiondata = script.Parent.sessionData
---script.AccelSystemsFKTC.Parent = game.ReplicatedStorage
-
---[[
-game.Players.PlayerAdded:Connect(function(player)
-	player.Chatted:Connect(function(msg)
-		if msg == "/showpanel" then
-			local gui = script.Parent.GUI.showpanel:Clone()
-			gui.Parent = player.PlayerGui
-		end
-	end)
-end)
---]]
 
 game.ReplicatedStorage.AccelSystemsFKTC.session.folder.Value = config.folder.Value
 script.Parent.GUI.loader.Parent = game.StarterGui
 config.whitelist:Clone().Parent = game.ReplicatedStorage.AccelSystemsFKTC
-
-warn("Loading AccelSystems Flux Kit Decompiler")
-task.wait(5)
-print("AccelSystems")
-print("Flux Kit Time Code System")
-print("Loading...")
-task.wait(0.5)
-print("Loaded.")
 
 local config = script.Parent.Configuration
 local logTable = {}
@@ -38,6 +18,9 @@ sound.Name = "AccelSystemsFKTC"
 local selectedSong = nil
 
 local showfile = {}
+
+task.wait(2)
+print("" .. "\n" .. "--------- AccelSystems FKTC ---------" .."" .. "\n" .. "\n" .. "Booting." .. "\n" .. "Getting Shows" .. "\n" .. "LOADED!" .. "\n" .. "" .. "\n" .. "--------- AccelSystems FKTC ---------")
 
 local function logEvent(eventType, arg1, arg2, arg3, arg4, arg5)
 	if script.Parent.sessionData.recording.Value == true then
@@ -143,19 +126,11 @@ game.Workspace.AccelSystemsFKTC.remotes.soundRemote.OnServerEvent:Connect(functi
 end)
 
 game.ServerScriptService.AccelSystemsFKTC.sessionData.recording.Changed:Connect(function(VALUE)
-	if VALUE == true and selectedSong[2] ~= nil then
+	if VALUE == true and selectedSong ~= nil then
 		sound.SoundId = "rbxassetid://"..selectedSong[2]
 		sound:Play()
 		
-		table.insert(showfile, {
-			eventType = "sound",
-			Function = selectedSong[1],
-			Arguments = selectedSong[2],
-			ExternalArgument = nil,
-			FunctionsExpand = nil,
-			ColorCompressed = nil,
-			Delay = nil
-		})
+		--logEvent("functions", selectedSong[1], selectedSong[2], "sound")
 		
 	elseif VALUE == false then
 		sound:Stop()
@@ -185,6 +160,6 @@ config.folder.Value.call.functions.OnServerEvent:Connect(function(player, arg1, 
 		logEvent("functions", arg1, arg2, arg3) -- works
 	else
 		local compressedString = compressModule.compressColor3Table(arg5)
-		logEvent("functions", arg1, arg2, arg3, arg4, compressedString) -- colors dont work
+		logEvent("functions", arg1, arg2, arg3, arg4, compressedString) -- colors work
 	end
 end)
