@@ -3,4 +3,4 @@
 - Made by AccelRanger
 - Get the compiled file at our [Discord](https://discord.gg/vCr4FrWDKX)
 
-Version 1.1
+Version 1.2
