@@ -1,0 +1,17 @@
+--AccelRanger just makes cool warnings thats all so you can read stuff from it
+local module = {}
+
+function module.Warn(heading, desc, msg)
+	warn(
+		"" .. "\n"
+		.. "--------- AccelSystems FKTC ---------" .."".. "\n" .. "\n" .. 
+		
+		heading .. "\n" .. 
+		desc .. "\n" .. 
+		msg ..
+		
+			"\n" .. "" .. "\n" .. "--------- AccelSystems FKTC ---------"
+	)
+end
+
+return module
