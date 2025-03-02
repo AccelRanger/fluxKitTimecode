@@ -1,3 +1,5 @@
+--AccelRanger / root for panel and client handling
+
 task.wait(1)
 local shows = game.ReplicatedStorage.AccelSystemsFKTC.shows
 local songs = game.ReplicatedStorage.AccelSystemsFKTC.songs
@@ -26,6 +28,21 @@ local showGUI = gui.core.shows
 local songGUI = gui.core.songs
 local outputGUI = gui.core.output
 
+local clickSound = Instance.new("Sound")
+clickSound.Parent = game:GetService("SoundService")
+clickSound.SoundId = "rbxassetid://6976440355"
+clickSound.Name = "FKTC_UI_SOUNDS_C"
+
+local playSound = Instance.new("Sound")
+playSound.Parent = game:GetService("SoundService")
+playSound.SoundId = "rbxassetid://97367190838793"
+playSound.Name = "FKTC_UI_SOUNDS_P"
+
+local errorSound = Instance.new("Sound")
+errorSound.Parent = game:GetService("SoundService")
+errorSound.SoundId = "rbxassetid://3429876367"
+errorSound.Name = "FKTC_UI_SOUNDS_E"
+
 --functions
 local function processShowfile(showfile)
 	print("running stack: processShowfile")
@@ -41,11 +58,13 @@ local function processShowfile(showfile)
 		task.wait(event.Delay)
 		
 		if remotes[eventType] then
-			if eventType == "functions" or eventType == "pyrotechnics" or "sound" then
+			if eventType == "functions" or eventType == "pyrotechnics" then
 				if arg4 == nil then
-					remotes[eventType]:FireServer(arg1, arg2, arg3)
-				--elseif arg3 == "sound" then
-				--	game.Workspace.AccelSystemsFKTC.remotes.soundRemote:FireServer(arg1, arg2)
+					if arg3 == "sound" then
+						game.Workspace.AccelSystemsFKTC.remotes.soundRemote:FireServer(arg1, arg2)
+					else
+						remotes[eventType]:FireServer(arg1, arg2, arg3)
+					end
 				else
 					local compressedColor = compressModule.decompressColor3String(arg5)
 					remotes[eventType]:FireServer(arg1, arg2, arg3, arg4, compressedColor)
@@ -59,6 +78,14 @@ local function processShowfile(showfile)
 	end
 	--showRunning = true
 end
+
+--[[
+
+Arg1> sound name
+Arg2> sound id
+Arg3> type
+
+--]]
 
 local function tableToString(tbl)
 	return game:GetService("HttpService"):JSONEncode(tbl)
@@ -89,6 +116,7 @@ local function userWarning(header,text)
 end
 
 local function changeFrame(frame)
+	clickSound:Play()
 	for _,v in pairs(gui.core:GetChildren()) do
 		if v:IsA("Frame") then
 			if v.Name == frame then
@@ -131,12 +159,19 @@ local function changeFrame(frame)
 					v.playShow.MouseButton1Up:Connect(function()
 						for _,value in pairs(shows:GetChildren()) do
 							if v.Name == value.Name then
-								userWarning("Playback System", "Running showfile / If not started run the show again.")
+								playSound:Play()
+								coroutine.wrap(function()
+									userWarning("Playback System", "Running showfile / If not started run the show again.")
+								end)()
+								
 								logAction("play")
 
 								local showfileProcessed = stringToTable(value.Value)
-								userWarning("Playback System", "Decompressing table, this might take a while.")
-								processShowfile(showfileProcessed)
+								coroutine.wrap(function()
+									userWarning("Playback System", "Decompressing table, this might take a while.")
+								end)()
+								errorSound:Play()
+								processShowfile(showfileProcessed) -- runs the show
 							end
 						end
 					end)
@@ -174,6 +209,7 @@ for _,v in pairs(showGUI.frame:GetChildren()) do
 	if v:IsA("Frame") then
 		if v.Name ~= "spacer" then
 			v.playShow.MouseButton1Up:Connect(function()
+				clickSound:Play()
 				for _,value in pairs(shows:GetChildren()) do
 					if v.Name == value.Name then
 						userWarning("Playback System", "Started showfile playback.")
@@ -193,6 +229,7 @@ for _,v in pairs(songGUI.frame:GetChildren()) do
 	if v:IsA("Frame") then
 		if v.Name ~= "spacer" then
 			v.selectSong.MouseButton1Up:Connect(function()
+				clickSound:Play()
 				for _,value in pairs(songs:GetChildren()) do
 					if v.Name == value.Name then
 						if showRunning == false then
@@ -208,6 +245,7 @@ for _,v in pairs(songGUI.frame:GetChildren()) do
 end
 
 gui.core.compress.MouseButton1Up:Connect(function()
+	clickSound:Play()
 	local data = game.Workspace.AccelSystemsFKTC.remotes.clientData:InvokeServer("showfile")
 	local func = tableToString(data)
 	createShow("SHOW"..show.."COMPRESSED", func)
@@ -216,16 +254,19 @@ gui.core.compress.MouseButton1Up:Connect(function()
 end)
 
 gui.core.startRecording.MouseButton1Up:Connect(function()
+	clickSound:Play()
 	game.Workspace.AccelSystemsFKTC.remotes.getDataClient:FireServer("startRecording")
 	logAction("startRecording")
 end)
 
 gui.core.stopRecording.MouseButton1Up:Connect(function()
+	clickSound:Play()
 	game.Workspace.AccelSystemsFKTC.remotes.getDataClient:FireServer("stopRecording")
 	logAction("stopRecording")
 end)
 
 gui.core.clear.MouseButton1Up:Connect(function()
+	clickSound:Play()
 	game.Workspace.AccelSystemsFKTC.remotes.getDataClient:FireServer("clear")
 	logAction("clear")
 end)
