@@ -11,9 +11,13 @@ local config = script.Parent.Configuration
 local logTable = {}
 local whitelist = require(config.whitelist)
 local compressModule = require(game.ReplicatedStorage.AccelSystemsFKTC.lib.ColourModule)
+local warnModule = require(game.ReplicatedStorage.AccelSystemsFKTC.lib.WarningModule)
 local lastEventTime = os.clock()
 local sound = Instance.new("Sound", game.SoundService)
 sound.Name = "AccelSystemsFKTC"
+
+local gitVersion = require(84432237552644)()
+local ver = "V1.3"
 
 local selectedSong = nil
 
@@ -21,6 +25,16 @@ local showfile = {}
 
 task.wait(2)
 print("" .. "\n" .. "--------- AccelSystems FKTC ---------" .."" .. "\n" .. "\n" .. "Booting." .. "\n" .. "Getting Shows" .. "\n" .. "LOADED!" .. "\n" .. "" .. "\n" .. "--------- AccelSystems FKTC ---------")
+
+function init()
+	if not config:FindFirstChild("folder") or config.folder.Value == nil then
+		warnModule.Warn("exiting server code, returning nil", "ERROR 001","Configuration>folder >> Does not exist, or value is invalid.")
+	elseif config:FindFirstChild("compilerDebug").Value == true then
+		print("AccelSystems FKTC Compiler Debug State: true")--..config.compilerDebug.Value)
+	elseif ver ~= gitVersion then
+		warnModule.Warn("Outdated version","ERROR 002", "Please use our newest version, Current version: "..ver.." Published version: "..gitVersion)
+	end
+end
 
 local function logEvent(eventType, arg1, arg2, arg3, arg4, arg5)
 	if script.Parent.sessionData.recording.Value == true then
@@ -130,7 +144,7 @@ game.ServerScriptService.AccelSystemsFKTC.sessionData.recording.Changed:Connect(
 		sound.SoundId = "rbxassetid://"..selectedSong[2]
 		sound:Play()
 		
-		--logEvent("functions", selectedSong[1], selectedSong[2], "sound")
+		logEvent("functions", selectedSong[1], selectedSong[2], "sound")
 		
 	elseif VALUE == false then
 		sound:Stop()
@@ -163,3 +177,7 @@ config.folder.Value.call.functions.OnServerEvent:Connect(function(player, arg1, 
 		logEvent("functions", arg1, arg2, arg3, arg4, compressedString) -- colors work
 	end
 end)
+
+-- initiliaze
+
+init()
