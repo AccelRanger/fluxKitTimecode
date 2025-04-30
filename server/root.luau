@@ -16,7 +16,7 @@ local lastEventTime = os.clock()
 local sound = Instance.new("Sound", game.SoundService)
 sound.Name = "AccelSystemsFKTC"
 
-local gitVersion = require(84432237552644)()
+local gitVersion = require(84432237552644)() -- version handler
 local ver = "V1.3"
 
 local selectedSong = nil
