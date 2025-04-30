@@ -34,6 +34,9 @@ function init()
 	elseif ver ~= gitVersion then
 		warnModule.Warn("Outdated version","ERROR 002", "Please use our newest version, Current version: "..ver.." Published version: "..gitVersion)
 	end
+	if config.folder == nil then
+		error("no folder set")
+	end
 end
 
 local function logEvent(eventType, arg1, arg2, arg3, arg4, arg5)
