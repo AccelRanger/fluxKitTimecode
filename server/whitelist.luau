@@ -1,10 +1,10 @@
 local whitelisted = {
 	["userIds"] = {
-		0;
+		0; -- add uid here
 	};
 	["usernames"] = {
 		"AccelRanger";
-		"streetlanterns"
+		"streetlanterns" -- add user here
 	};
 	["groups"] = {
 		["groupID"] = 1;
