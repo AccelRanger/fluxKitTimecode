@@ -1,4 +1,20 @@
---AccelRanger / root for panel and client handling
+--[[
+
+
+░█████╗░░█████╗░░█████╗░███████╗██╗░░░░░░██████╗██╗░░░██╗░██████╗████████╗███████╗███╗░░░███╗░██████╗
+██╔══██╗██╔══██╗██╔══██╗██╔════╝██║░░░░░██╔════╝╚██╗░██╔╝██╔════╝╚══██╔══╝██╔════╝████╗░████║██╔════╝
+███████║██║░░╚═╝██║░░╚═╝█████╗░░██║░░░░░╚█████╗░░╚████╔╝░╚█████╗░░░░██║░░░█████╗░░██╔████╔██║╚█████╗░
+██╔══██║██║░░██╗██║░░██╗██╔══╝░░██║░░░░░░╚═══██╗░░╚██╔╝░░░╚═══██╗░░░██║░░░██╔══╝░░██║╚██╔╝██║░╚═══██╗
+██║░░██║╚█████╔╝╚█████╔╝███████╗███████╗██████╔╝░░░██║░░░██████╔╝░░░██║░░░███████╗██║░╚═╝░██║██████╔╝
+╚═╝░░╚═╝░╚════╝░░╚════╝░╚══════╝╚══════╝╚═════╝░░░░╚═╝░░░╚═════╝░░░░╚═╝░░░╚══════╝╚═╝░░░░░╚═╝╚═════╝░
+
+
+Scripted by: AccelRanger
+
+Core: Client GUI
+Description: Client Panel handler
+
+--]]
 
 task.wait(1)
 local shows = game.ReplicatedStorage.AccelSystemsFKTC.shows
@@ -7,7 +23,7 @@ local localPlayer = game.Players.LocalPlayer
 local show = 1
 local logTable = {}
 
-print("" .. "\n" .. "--------- AccelSystems FKTC ---------" .. "\n" .. "" .. "\n" .. "Running client/root" .. "\n" .. "Extracting GUI" .. "\n" .. "Processing whitelist" .. "\n" .. "UserID: "..game.Players.LocalPlayer.UserId .. "\n" .. "User: "..game.Players.LocalPlayer.Name .. "\n" .. "" .. "\n" ..  "--------- AccelSystems FKTC ---------")
+print("" .. "\n" .. "--------- AccelSystems FKTC ---------" .. "\n" .. "" .. "\n" .. "Running client/root" .. "\n" .. "Extracting GUI" .. "\n" .. "Processing whitelist" .. "\n" .. "UserID: "..game.Players.LocalPlayer.UserId .. "\n" .. "User: "..game.Players.LocalPlayer.Name .. "\n" .. "" .. "\n" .."--------- AccelSystems FKTC ---------")
 
 local showRunning = false
 
@@ -53,10 +69,10 @@ local function processShowfile(showfile)
 		local arg3 = event.ExternalArgument
 		local arg4 = event.FunctionsExpand
 		local arg5 = event.ColorCompressed
-		
+
 		if game.ReplicatedStorage.AccelSystemsFKTC.debug.Value == true then print("waiting: "..event.Delay) end
 		task.wait(event.Delay)
-		
+
 		if remotes[eventType] then
 			if eventType == "functions" or eventType == "pyrotechnics" then
 				if arg4 == nil then
@@ -126,14 +142,14 @@ local function changeFrame(frame)
 			end
 		end
 	end
-	
+
 	if frame == "output" then
 		for _,v in pairs(outputGUI.frame:GetChildren()) do
 			if v:IsA("Frame") and v.Name ~= "spacer" then
 				v:Destroy()
 			end
 		end
-		
+
 		for _,v in pairs(game.Workspace.AccelSystemsFKTC.remotes.clientData:InvokeServer("outputlog")) do
 			local clone = templates.logTemplate:Clone()
 			clone.log.Text = v
@@ -152,7 +168,7 @@ local function changeFrame(frame)
 			clone.showName.Text = v.Name
 			clone.Parent = showGUI.frame
 		end
-		
+
 		for _,v in pairs(showGUI.frame:GetChildren()) do
 			if v:IsA("Frame") then
 				if v.Name ~= "spacer" then
@@ -163,7 +179,7 @@ local function changeFrame(frame)
 								coroutine.wrap(function()
 									userWarning("Playback System", "Running showfile / If not started run the show again.")
 								end)()
-								
+
 								logAction("play")
 
 								local showfileProcessed = stringToTable(value.Value)
@@ -179,8 +195,8 @@ local function changeFrame(frame)
 			end
 		end
 	end
-	
-	gui.core.selected.Text = "Selected: "..frame 
+
+	gui.core.selected.Text = "Selected: "..frame
 end
 
 --setup
@@ -214,7 +230,7 @@ for _,v in pairs(showGUI.frame:GetChildren()) do
 					if v.Name == value.Name then
 						userWarning("Playback System", "Started showfile playback.")
 						logAction("play")
-						
+
 						local showfileProcessed = stringToTable(value.Value)
 						processShowfile(showfileProcessed)
 					end
