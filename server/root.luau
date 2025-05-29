@@ -1,9 +1,24 @@
---AccelRanger
+--[[
+
+
+░█████╗░░█████╗░░█████╗░███████╗██╗░░░░░░██████╗██╗░░░██╗░██████╗████████╗███████╗███╗░░░███╗░██████╗
+██╔══██╗██╔══██╗██╔══██╗██╔════╝██║░░░░░██╔════╝╚██╗░██╔╝██╔════╝╚══██╔══╝██╔════╝████╗░████║██╔════╝
+███████║██║░░╚═╝██║░░╚═╝█████╗░░██║░░░░░╚█████╗░░╚████╔╝░╚█████╗░░░░██║░░░█████╗░░██╔████╔██║╚█████╗░
+██╔══██║██║░░██╗██║░░██╗██╔══╝░░██║░░░░░░╚═══██╗░░╚██╔╝░░░╚═══██╗░░░██║░░░██╔══╝░░██║╚██╔╝██║░╚═══██╗
+██║░░██║╚█████╔╝╚█████╔╝███████╗███████╗██████╔╝░░░██║░░░██████╔╝░░░██║░░░███████╗██║░╚═╝░██║██████╔╝
+╚═╝░░╚═╝░╚════╝░░╚════╝░╚══════╝╚══════╝╚═════╝░░░░╚═╝░░░╚═════╝░░░░╚═╝░░░╚══════╝╚═╝░░░░░╚═╝╚═════╝░
+
+
+Scripted by: AccelRanger
+
+Core: Server Core
+Description: Main
+
+--]]
 
 local config = script.Parent.Configuration
 local sessiondata = script.Parent.sessionData
 
-game.ReplicatedStorage.AccelSystemsFKTC.session.folder.Value = config.folder.Value
 script.Parent.GUI.loader.Parent = game.StarterGui
 config.whitelist:Clone().Parent = game.ReplicatedStorage.AccelSystemsFKTC
 
@@ -16,8 +31,8 @@ local lastEventTime = os.clock()
 local sound = Instance.new("Sound", game.SoundService)
 sound.Name = "AccelSystemsFKTC"
 
-local gitVersion = require(84432237552644)() -- version handler
-local ver = "V1.3"
+local gitVersion = require(84432237552644)()
+local ver = "V1.4"
 
 local selectedSong = nil
 
@@ -26,16 +41,26 @@ local showfile = {}
 task.wait(2)
 print("" .. "\n" .. "--------- AccelSystems FKTC ---------" .."" .. "\n" .. "\n" .. "Booting." .. "\n" .. "Getting Shows" .. "\n" .. "LOADED!" .. "\n" .. "" .. "\n" .. "--------- AccelSystems FKTC ---------")
 
+if config.autoSearch.Value == true then
+	for _,v in pairs(game.Workspace:GetDescendants()) do
+		if v:IsA("Folder") and v.Name == "remotes" then
+			if v.Parent.Name == "components" then
+				config.folder.Value = v
+				print("set")
+			end
+		end
+	end
+end
+
+game.ReplicatedStorage.AccelSystemsFKTC.session.folder.Value = config.folder.Value
+
 function init()
 	if not config:FindFirstChild("folder") or config.folder.Value == nil then
 		warnModule.Warn("exiting server code, returning nil", "ERROR 001","Configuration>folder >> Does not exist, or value is invalid.")
 	elseif config:FindFirstChild("compilerDebug").Value == true then
 		print("AccelSystems FKTC Compiler Debug State: true")--..config.compilerDebug.Value)
 	elseif ver ~= gitVersion then
-		warnModule.Warn("Outdated version","ERROR 002", "Please use our newest version, Current version: "..ver.." Published version: "..gitVersion)
-	end
-	if config.folder == nil then
-		error("no folder set")
+		warnModule.Warn("Current version","WARNING 001", "If the versions are not the same consider using the new one, Current version: "..ver.." Published version: "..gitVersion)
 	end
 end
 
